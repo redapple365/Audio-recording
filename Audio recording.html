@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页录音机 v1.6</title>
+    <!-- 本地引入纯前端 MP3 编码库 lamejs -->
+    <script src="./lame.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --primary-color: #3b82f6;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .recorder-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 480px;
+            min-height: 250px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+
+        .form-control:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin: 16px 0 10px 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-idle .dot { background-color: var(--text-muted); }
+        .status-recording .dot { background-color: var(--danger-color); animation: pulse 1.5s infinite; }
+        .status-paused .dot { background-color: var(--warning-color); }
+        .status-encoding .dot { background-color: var(--primary-color); animation: pulse 1s infinite; }
+        .status-finished .dot { background-color: #10b981; }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .visualizer-container {
+            background-color: #090d16;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+        }
+
+        .timer {
+            text-align: center;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background-color: var(--danger-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--danger-hover); }
+
+        .btn-warning { background-color: var(--warning-color); color: #000; }
+        .btn-warning:hover:not(:disabled) { opacity: 0.9; }
+
+        .btn-secondary { background-color: #475569; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #334155; }
+
+        .btn-download {
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            width: 100%;
+        }
+        .btn-download:hover {
+            background-color: #059669;
+        }
+
+        .player-container {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        audio {
+            width: 100%;
+            height: 36px;
+            border-radius: 6px;
+        }
+
+        .toast-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+
+        @media (max-width: 400px), (max-height: 480px) {
+            body { padding: 4px; }
+            .recorder-card { padding: 10px; border-radius: 10px; }
+            .header, .form-group, .status-badge, .player-container, .toast-msg { display: none !important; }
+            .visualizer-container { padding: 4px; margin-bottom: 6px; }
+            canvas { height: 50px; }
+            .timer { font-size: 1.2rem; margin-bottom: 6px; }
+            .btn { padding: 6px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="recorder-card">
+    <div class="header">
+        <h1>🎙 网页录音机 v1.6.1</h1>
+    </div>
+
+    <div class="form-group">
+        <label for="recordName">录音名称</label>
+        <input type="text" id="recordName" class="form-control" value="录音">
+    </div>
+
+    <div class="form-group">
+        <label for="micSelect">麦克风设备</label>
+        <select id="micSelect" class="form-control">
+            <option value="">正在检测麦克风设备...</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="bitrateSelect">录音质量</label>
+        <select id="bitrateSelect" class="form-control">
+            <option value="16">16 kbps (极低比特率)</option>
+            <option value="32">32 kbps (低比特率)</option>
+            <option value="48" selected>48 kbps (推荐/节省空间)</option>
+            <option value="64">64 kbps (较好语音)</option>
+            <option value="96">96 kbps (高质量语音)</option>
+            <option value="128">128 kbps (标准质量)</option>
+            <option value="192">192 kbps (较高质量)</option>
+            <option value="256">256 kbps (高质量)</option>
+            <option value="320">320 kbps (最高质量)</option>
+        </select>
+    </div>
+
+    <div id="statusBadge" class="status-badge status-idle">
+        <span class="dot"></span>
+        <span id="statusText">⚪ 等待录音</span>
+    </div>
+
+    <div class="visualizer-container">
+        <canvas id="canvas" width="400" height="100"></canvas>
+    </div>
+
+    <div class="timer" id="timerDisplay">00:00:00</div>
+
+    <div class="controls" id="controlsGroup">
+        <button id="btnStart" class="btn btn-primary">🔴 开始录制</button>
+        <button id="btnPause" class="btn btn-warning" style="display: none;">⏸ 暂停录制</button>
+        <button id="btnResume" class="btn btn-primary" style="display: none;">▶ 继续录制</button>
+        <button id="btnStop" class="btn btn-secondary" style="display: none;">⏹ 停止录制</button>
+    </div>
+
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <div id="playerContainer" class="player-container" style="display: none;">
+        <audio id="audioPreview" controls></audio>
+        <button id="btnDownloadManual" class="btn btn-download">📥 下载 MP3</button>
+    </div>
+</div>
+
+<script>
+    const STATE = {
+        IDLE: 'idle',
+        RECORDING: 'recording',
+        PAUSED: 'paused',
+        ENCODING: 'encoding',
+        FINISHED: 'finished'
+    };
+
+    let currentState = STATE.IDLE;
+    
+    let audioCtx = null;
+    let currentStream = null;
+    let activeDeviceId = null; 
+    let sourceNode = null;
+    let analyserNode = null;
+    let workletNode = null; 
+
+    let pcmChunks = [];
+    let recordStartTime = null;
+    let totalRecordedMs = 0;
+    let lastTimerTick = 0;
+    let timerInterval = null;
+    let currentDownloadUrl = null;
+    let currentFileName = '';
+
+    // Canvas 动画参数与全局复用对象
+    const CANVAS_BARS = 28;
+    const CANVAS_SEGS = 12;
+    let barHeights = new Float32Array(CANVAS_BARS).fill(0);
+    const globalFreqData = new Uint8Array(128); 
+
+    const elName = document.getElementById('recordName');
+    const elMic = document.getElementById('micSelect');
+    const elBitrate = document.getElementById('bitrateSelect');
+    const elStatusBadge = document.getElementById('statusBadge');
+    const elStatusText = document.getElementById('statusText');
+    const elTimer = document.getElementById('timerDisplay');
+    const elBtnStart = document.getElementById('btnStart');
+    const elBtnPause = document.getElementById('btnPause');
+    const elBtnResume = document.getElementById('btnResume');
+    const elBtnStop = document.getElementById('btnStop');
+    const elBtnDownloadManual = document.getElementById('btnDownloadManual');
+    const elToast = document.getElementById('toastMsg');
+    const elPlayerContainer = document.getElementById('playerContainer');
+    const elAudioPreview = document.getElementById('audioPreview');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function setupCanvasDPI() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', setupCanvasDPI);
+    setupCanvasDPI();
+
+    window.addEventListener('beforeunload', (e) => {
+        if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+            e.preventDefault();
+            e.returnValue = '录音正在进行中，关闭或刷新页面将导致数据丢失，确定要离开吗？';
+            return e.returnValue;
+        }
+        releaseAudioResources();
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await requestPermissionAndLoadDevices();
+        setupDeviceChangeListener();
+        drawVisualizer();
+    });
+
+    async function setupAudioWorklet(context) {
+        const workletCode = `
+            class RecorderWorklet extends AudioWorkletProcessor {
+                process(inputs, outputs, parameters) {
+                    const input = inputs[0];
+                    if (input && input.length > 0) {
+                        const channelData = input[0];
+                        const pcm16 = new Int16Array(channelData.length);
+                        for (let i = 0; i < channelData.length; i++) {
+                            let s = Math.max(-1, Math.min(1, channelData[i]));
+                            pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                        }
+                        this.port.postMessage(pcm16);
+                    }
+                    return true;
+                }
+            }
+            registerProcessor('recorder-worklet', RecorderWorklet);
+        `;
+        const blob = new Blob([workletCode], { type: 'application/javascript' });
+        const workletUrl = URL.createObjectURL(blob);
+        await context.audioWorklet.addModule(workletUrl);
+    }
+
+    async function requestPermissionAndLoadDevices() {
+        showToast("");
+        try {
+            const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            tempStream.getTracks().forEach(track => track.stop());
+
+            await new Promise(r => setTimeout(r, 100));
+            await refreshMicList();
+        } catch (err) {
+            console.error("初始化权限失败:", err);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                showToast("⚠ 无法访问麦克风，请允许网页使用麦克风。");
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                showToast("⚠ 未检测到可用的麦克风硬件设备。");
+            } else {
+                showToast("⚠ 麦克风初始化失败: " + err.message);
+            }
+            elMic.innerHTML = `<option value="">无法获取麦克风</option>`;
+        }
+    }
+
+    async function refreshMicList() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+        elMic.innerHTML = '';
+
+        if (audioInputs.length === 0) {
+            activeDeviceId = null;
+            elMic.innerHTML = `<option value="">未检测到麦克风</option>`;
+
+            if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+                showToast("⚠ 所有麦克风已被拔出/禁用！");
+            }
+            return;
+        }
+
+        let defaultDevice = null;
+        let activeDeviceStillExists = false;
+
+        audioInputs.forEach((device, index) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            
+            let name = device.label;
+            if (!name) {
+                if (device.deviceId === 'default') {
+                    name = '默认麦克风';
+                } else {
+                    name = `麦克风输入 ${index + 1}`;
+                }
+            }
+            option.textContent = name;
+
+            // 如果已有活跃设备，检查它是否还在当前列表中
+            if (activeDeviceId && device.deviceId === activeDeviceId) {
+                option.selected = true;
+                activeDeviceStillExists = true;
+            }
+
+            // 记录浏览器的默认设备标识
+            if (device.deviceId === 'default') {
+                defaultDevice = device;
+            }
+            
+            elMic.appendChild(option);
+        });
+
+        if (!activeDeviceId) {
+            // 当前没有活跃设备（如首次加载网页）：使用浏览器默认麦克风
+            if (defaultDevice) {
+                elMic.value = defaultDevice.deviceId;
+                activeDeviceId = defaultDevice.deviceId;
+            } else {
+                elMic.selectedIndex = 0;
+                activeDeviceId = elMic.value;
+            }
+        } else if (!activeDeviceStillExists) {
+            // 非初始化阶段，且原先正在使用的设备已被拔出
+            activeDeviceId = null;
+            const warningOpt = document.createElement('option');
+            warningOpt.value = "";
+            warningOpt.disabled = true;
+            warningOpt.selected = true;
+            warningOpt.textContent = "⚠ 原设备已断开，请选择麦克风...";
+            elMic.insertBefore(warningOpt, elMic.firstChild);
+
+            if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+                showToast("⚠ 当前使用中的麦克风已断开，请重新选择设备。");
+            }
+        }
+    }
+
+    function setupDeviceChangeListener() {
+        if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+            navigator.mediaDevices.addEventListener('devicechange', async () => {
+                await refreshMicList();
+            });
+        }
+    }
+
+    function bindTrackEndEvent(stream) {
+        if (!stream) return;
+        const tracks = stream.getAudioTracks();
+        if (tracks.length > 0) {
+            tracks[0].onended = () => {
+                console.warn("麦克风设备已被物理断开或系统停止。");
+                if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+                    pauseTimer();
+                    showToast("⚠ 麦克风设备已断开，请选择新设备或重新连接。");
+                    setState(STATE.PAUSED);
+                    refreshMicList();
+                }
+            };
+        }
+    }
+
+    async function switchMicStream(newDeviceId) {
+        let newStream = null;
+        try {
+            const constraints = {
+                audio: {
+                    deviceId: newDeviceId ? { exact: newDeviceId } : undefined,
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            };
+
+            newStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                await setupAudioWorklet(audioCtx);
+            }
+            if (audioCtx.state === 'suspended') {
+                await audioCtx.resume();
+            }
+
+            if (!analyserNode) {
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 256;
+                analyserNode.smoothingTimeConstant = 0.3;
+            }
+
+            if (!workletNode) {
+                workletNode = new AudioWorkletNode(audioCtx, 'recorder-worklet');
+                workletNode.port.onmessage = (e) => {
+                    if (currentState === STATE.RECORDING) {
+                        pcmChunks.push(e.data);
+                    }
+                };
+            }
+
+            if (sourceNode) {
+                sourceNode.disconnect();
+                sourceNode = null;
+            }
+
+            sourceNode = audioCtx.createMediaStreamSource(newStream);
+            sourceNode.connect(analyserNode);
+            sourceNode.connect(workletNode);
+
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            currentStream = newStream;
+            activeDeviceId = newDeviceId || (newStream.getAudioTracks()[0] ? newStream.getAudioTracks()[0].getSettings().deviceId : null);
+            bindTrackEndEvent(currentStream);
+            showToast(""); 
+            return true;
+
+        } catch (err) {
+            console.error("切换/初始化麦克风失败:", err);
+            if (newStream) {
+                newStream.getTracks().forEach(track => track.stop());
+            }
+            if (activeDeviceId) {
+                elMic.value = activeDeviceId;
+            }
+            showToast("⚠ 麦克风连接失败，请检查硬件及权限设置。");
+            return false;
+        }
+    }
+
+    function releaseAudioResources() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+        if (sourceNode) {
+            sourceNode.disconnect();
+            sourceNode = null;
+        }
+        if (workletNode) {
+            workletNode.disconnect();
+            workletNode.port.onmessage = null;
+            workletNode = null;
+        }
+        if (analyserNode) {
+            analyserNode.disconnect();
+            analyserNode = null;
+        }
+        if (audioCtx && audioCtx.state !== 'closed') {
+            audioCtx.close();
+            audioCtx = null;
+        }
+        activeDeviceId = null;
+    }
+
+    elMic.addEventListener('change', async (e) => {
+        const newDeviceId = e.target.value;
+        if (!newDeviceId) return;
+        
+        // 此处不再向 localStorage 保存选择结果，只对当前会话生效
+        if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+            await switchMicStream(newDeviceId);
+        } else {
+            activeDeviceId = newDeviceId;
+        }
+    });
+
+    function setState(newState) {
+        currentState = newState;
+        
+        switch (newState) {
+            case STATE.IDLE:
+                elName.disabled = false;
+                elMic.disabled = false;
+                elBitrate.disabled = false;
+
+                elBtnStart.disabled = false;
+                elBtnStart.style.display = 'flex';
+                elBtnPause.style.display = 'none';
+                elBtnResume.style.display = 'none';
+                elBtnStop.style.display = 'none';
+
+                elStatusBadge.className = 'status-badge status-idle';
+                elStatusText.textContent = '⚪ 等待录音';
+                break;
+
+            case STATE.RECORDING:
+                elName.disabled = true;
+                elMic.disabled = false; 
+                elBitrate.disabled = true;
+
+                elBtnStart.style.display = 'none';
+                elBtnPause.disabled = false;
+                elBtnPause.style.display = 'flex';
+                elBtnResume.style.display = 'none';
+                elBtnStop.disabled = false;
+                elBtnStop.style.display = 'flex';
+
+                elStatusBadge.className = 'status-badge status-recording';
+                elStatusText.textContent = '🔴 正在录音';
+                break;
+
+            case STATE.PAUSED:
+                elName.disabled = true;
+                elMic.disabled = false; 
+                elBitrate.disabled = true;
+
+                elBtnStart.style.display = 'none';
+                elBtnPause.style.display = 'none';
+                elBtnResume.disabled = false;
+                elBtnResume.style.display = 'flex';
+                elBtnStop.disabled = false;
+                elBtnStop.style.display = 'flex';
+
+                elStatusBadge.className = 'status-badge status-paused';
+                elStatusText.textContent = '🟡 已暂停';
+                break;
+
+            case STATE.ENCODING:
+                elName.disabled = true;
+                elMic.disabled = true;
+                elBitrate.disabled = true;
+
+                elBtnStart.disabled = true;
+                elBtnPause.disabled = true;
+                elBtnResume.disabled = true;
+                elBtnStop.disabled = true;
+
+                elStatusBadge.className = 'status-badge status-encoding';
+                elStatusText.textContent = '🔄 正在生成 MP3...';
+                break;
+
+            case STATE.FINISHED:
+                elName.disabled = false;
+                elMic.disabled = false;
+                elBitrate.disabled = false;
+
+                elBtnStart.disabled = false;
+                elBtnPause.disabled = false;
+                elBtnResume.disabled = false;
+                elBtnStop.disabled = false;
+
+                elBtnStart.style.display = 'flex';
+                elBtnPause.style.display = 'none';
+                elBtnResume.style.display = 'none';
+                elBtnStop.style.display = 'none';
+
+                elStatusBadge.className = 'status-badge status-finished';
+                elStatusText.textContent = '✅ 录制完成';
+                break;
+        }
+    }
+
+    elBtnStart.addEventListener('click', async () => {
+        showToast("");
+        elPlayerContainer.style.display = 'none';
+
+        pcmChunks = [];
+        totalRecordedMs = 0;
+        updateTimerDisplay(0);
+
+        const selectedMicId = elMic.value;
+        const ok = await switchMicStream(selectedMicId);
+
+        if (!ok || !currentStream) {
+            showToast("⚠ 无法开启麦克风，请检查设备选择或权限。");
+            return;
+        }
+
+        recordStartTime = new Date();
+        startTimer();
+        setState(STATE.RECORDING);
+    });
+
+    elBtnPause.addEventListener('click', () => {
+        pauseTimer();
+        setState(STATE.PAUSED);
+    });
+
+    elBtnResume.addEventListener('click', async () => {
+        showToast("");
+
+        let isStreamValid = false;
+        if (currentStream && currentStream.getAudioTracks().length > 0) {
+            const track = currentStream.getAudioTracks()[0];
+            if (track && track.readyState === 'live') {
+                isStreamValid = true;
+            }
+        }
+
+        if (!isStreamValid) {
+            console.warn("继续录制前检测到 Stream 已失效，尝试重建音频流...");
+            const selectedMicId = elMic.value;
+            const reconnected = await switchMicStream(selectedMicId);
+            
+            if (!reconnected) {
+                showToast("⚠ 麦克风重连失败，请插回设备或选择可用麦克风后再试。");
+                setState(STATE.PAUSED);
+                return;
+            }
+        }
+
+        startTimer();
+        setState(STATE.RECORDING);
+    });
+
+    elBtnStop.addEventListener('click', async () => {
+        pauseTimer();
+        setState(STATE.ENCODING);
+
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+        if (sourceNode) {
+            sourceNode.disconnect();
+            sourceNode = null;
+        }
+
+        setTimeout(async () => {
+            await encodeAndDownloadMP3();
+        }, 100);
+    });
+
+    elBtnDownloadManual.addEventListener('click', () => {
+        if (currentDownloadUrl && currentFileName) {
+            triggerDownload(currentDownloadUrl, currentFileName);
+        }
+    });
+
+    function sanitizeFileName(rawName) {
+        if (!rawName) return '录音';
+        let sanitized = rawName.replace(/[\\/:*?"<>|]/g, '_');
+        sanitized = sanitized.trim().replace(/\s+/g, ' ');
+        return sanitized || '录音';
+    }
+
+    function generateFileName(startTime, customName) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        const year = startTime.getFullYear();
+        const month = pad(startTime.getMonth() + 1);
+        const day = pad(startTime.getDate());
+        const hours = pad(startTime.getHours());
+        const minutes = pad(startTime.getMinutes());
+        const seconds = pad(startTime.getSeconds());
+
+        const safeName = sanitizeFileName(customName);
+        return `${safeName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.mp3`;
+    }
+
+    async function encodeAndDownloadMP3() {
+        try {
+            if (pcmChunks.length === 0) {
+                throw new Error("无有效音频数据录入");
+            }
+
+            if (typeof lamejs === 'undefined') {
+                throw new Error("lamejs 库未正确加载，请检查 lame.min.js 是否在网页同级目录下。");
+            }
+
+            const sampleRate = audioCtx ? audioCtx.sampleRate : 44100;
+            const kbps = parseInt(elBitrate.value, 10);
+            const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, kbps);
+            const mp3Data = [];
+
+            for (let i = 0; i < pcmChunks.length; i++) {
+                const chunk = pcmChunks[i];
+                const mp3buf = mp3encoder.encodeBuffer(chunk);
+                if (mp3buf.length > 0) {
+                    mp3Data.push(mp3buf);
+                }
+            }
+
+            const mp3buf = mp3encoder.flush();
+            if (mp3buf.length > 0) {
+                mp3Data.push(mp3buf);
+            }
+
+            const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+            
+            if (currentDownloadUrl) {
+                URL.revokeObjectURL(currentDownloadUrl);
+            }
+
+            currentDownloadUrl = URL.createObjectURL(blob);
+            currentFileName = generateFileName(recordStartTime || new Date(), elName.value);
+
+            triggerDownload(currentDownloadUrl, currentFileName);
+
+            elAudioPreview.src = currentDownloadUrl;
+            elPlayerContainer.style.display = 'flex';
+
+            pcmChunks = [];
+            setState(STATE.FINISHED);
+        } catch (err) {
+            console.error("MP3 编码失败:", err);
+            pcmChunks = [];
+            showToast("⚠ " + err.message);
+            setState(STATE.IDLE);
+        }
+    }
+
+    function triggerDownload(url, fileName) {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    function startTimer() {
+        lastTimerTick = Date.now();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            const now = Date.now();
+            totalRecordedMs += (now - lastTimerTick);
+            lastTimerTick = now;
+            updateTimerDisplay(totalRecordedMs);
+        }, 100);
+    }
+
+    function pauseTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function updateTimerDisplay(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSec / 3600);
+        const minutes = Math.floor((totalSec % 3600) / 60);
+        const seconds = totalSec % 60;
+
+        const pad = (n) => n.toString().padStart(2, '0');
+        elTimer.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+
+        const rectWidth = canvas.getBoundingClientRect().width;
+        const rectHeight = canvas.getBoundingClientRect().height;
+
+        ctx.clearRect(0, 0, rectWidth, rectHeight);
+
+        if (analyserNode && currentState === STATE.RECORDING) {
+            analyserNode.getByteFrequencyData(globalFreqData);
+        }
+
+        const totalBars = CANVAS_BARS;
+        const totalSegs = CANVAS_SEGS;
+        const gapX = 4;
+        const barWidth = (rectWidth - (totalBars - 1) * gapX) / totalBars;
+        const segGapY = 1.5;
+        const segHeight = (rectHeight - (totalSegs - 1) * segGapY) / totalSegs;
+
+        for (let i = 0; i < totalBars; i++) {
+            let targetSegCount = 0;
+
+            if (currentState === STATE.RECORDING) {
+                const fftIdx = Math.floor(Math.pow(i / totalBars, 1.5) * 60) + 1;
+                const rawVal = globalFreqData[fftIdx] || 0;
+                targetSegCount = (rawVal / 255) * totalSegs;
+            } else if (currentState === STATE.PAUSED) {
+                targetSegCount = barHeights[i];
+            } else if (currentState === STATE.IDLE) {
+                targetSegCount = 1;
+            } else if (currentState === STATE.ENCODING || currentState === STATE.FINISHED) {
+                targetSegCount = 0;
+            }
+
+            if (targetSegCount > barHeights[i]) {
+                barHeights[i] += (targetSegCount - barHeights[i]) * 0.8;
+            } else {
+                barHeights[i] -= (barHeights[i] - targetSegCount) * 0.15;
+            }
+
+            const currentActiveSegs = Math.round(barHeights[i]);
+
+            for (let s = 0; s < totalSegs; s++) {
+                const segIdxFromBottom = s;
+                const x = i * (barWidth + gapX);
+                const y = rectHeight - (segIdxFromBottom + 1) * segHeight - segIdxFromBottom * segGapY;
+
+                const isActive = segIdxFromBottom < currentActiveSegs;
+
+                if (isActive) {
+                    if (segIdxFromBottom >= 10) {
+                        ctx.fillStyle = '#ef4444';
+                    } else if (segIdxFromBottom >= 7) {
+                        ctx.fillStyle = '#f59e0b';
+                    } else {
+                        ctx.fillStyle = '#3b82f6';
+                    }
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+                }
+
+                drawRoundedRect(ctx, x, y, barWidth, segHeight, 1);
+            }
+        }
+    }
+
+    function drawRoundedRect(ctx, x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function showToast(msg) {
+        elToast.textContent = msg;
+    }
+</script>
+</body>
+</html>
