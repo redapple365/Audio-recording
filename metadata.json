@@ -1,6 +1,0 @@
-{
-  "name": "极简高音质录音机",
-  "description": "基于 Web Audio API 与 AudioWorklet + Web Worker 离线 MP3 编码的高性能网页录音机，支持设备热切换、可调比特率与实时可视化频谱。",
-  "requestFramePermissions": ["microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
