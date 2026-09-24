@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>录音机 v1.8.1</title>
+    <title>录音机 v1.7.1</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
@@ -21,6 +21,7 @@
             color: #f8fafc;
         }
 
+        /* Glassmorphism base style */
         .glass-card {
             background: rgba(30, 41, 59, 0.65);
             backdrop-filter: blur(16px);
@@ -29,6 +30,7 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         }
 
+        /* Animated glowing border effect */
         .glow-effect {
             position: relative;
         }
@@ -47,6 +49,7 @@
             opacity: 0.6;
         }
 
+        /* Custom dropdown styles */
         .custom-select {
             position: relative;
             user-select: none;
@@ -102,12 +105,14 @@
             font-weight: 500;
         }
 
+        /* Form control disabled overlay state */
         .form-control-disabled {
             opacity: 0.5;
             pointer-events: none;
             cursor: not-allowed;
         }
 
+        /* Custom Scrollbar for Dropdown */
         .select-dropdown::-webkit-scrollbar {
             width: 5px;
         }
@@ -119,6 +124,7 @@
             border-radius: 10px;
         }
 
+        /* Custom pulse animation for recording status */
         @keyframes pulse-ring {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -145,7 +151,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <!-- Version Badge -->
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60">v1.8.1</span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60">v1.7.1</span>
                 <!-- Status Badge -->
                 <div id="statusBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-slate-500" id="statusDot"></span>
@@ -213,7 +219,7 @@
                 00:00:00
             </div>
 
-            <!-- Equalizer Visualizer Canvas -->
+            <!-- Equalizer Visualizer Canvas (高度缩小 50%：h-28 -> h-14) -->
             <div class="w-full h-14 relative flex items-center justify-center">
                 <canvas id="canvas" class="w-full h-full block"></canvas>
             </div>
@@ -222,27 +228,27 @@
         <!-- Control Action Buttons -->
         <section class="flex items-center justify-center gap-4 py-2">
             <!-- Start Button -->
-            <button id="btnStart" class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all cursor-pointer">
+            <button id="btnStart" class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
                 <i class="fa-solid fa-circle text-xs text-red-400"></i> 开始录音
             </button>
 
             <!-- Pause Button -->
-            <button id="btnPause" style="display: none;" class="px-6 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-amber-600/30 transition-all cursor-pointer">
+            <button id="btnPause" style="display: none;" class="px-6 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-amber-600/30 transition-all">
                 <i class="fa-solid fa-pause"></i> 暂停录音
             </button>
 
             <!-- Resume Button -->
-            <button id="btnResume" style="display: none;" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
+            <button id="btnResume" style="display: none;" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all">
                 <i class="fa-solid fa-play"></i> 继续录音
             </button>
 
             <!-- Stop Button -->
-            <button id="btnStop" style="display: none;" class="px-6 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer">
+            <button id="btnStop" style="display: none;" class="px-6 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all">
                 <i class="fa-solid fa-square"></i> 停止录制
             </button>
 
             <!-- Download Button (Post Finished) -->
-            <button id="btnDownloadManual" style="display: none;" class="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+            <button id="btnDownloadManual" style="display: none;" class="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all">
                 <i class="fa-solid fa-download"></i> 下载 MP3
             </button>
         </section>
@@ -258,6 +264,7 @@
     </main>
 
     <script>
+        // State Machine constants
         const STATE = {
             IDLE: 'idle',
             RECORDING: 'recording',
@@ -270,15 +277,16 @@
         
         let audioCtx = null;
         let currentStream = null;
-        let activeDeviceId = null;
+        let activeDeviceId = null; 
         let sourceNode = null;
-        let filterNode = null;
         let analyserNode = null;
         let workletNode = null; 
 
-        let encoderWorker = null;
+        // Real-time MP3 encoding states
+        let mp3Encoder = null;
+        let mp3Chunks = [];
+        let pcmBuffer = new Int16Array(0); // Holds leftover PCM frames for fixed-size encoding
 
-        let lockedRecordName = '语音录音';
         let recordStartTime = null;
         let totalRecordedMs = 0;
         let lastTimerTick = 0;
@@ -286,20 +294,17 @@
         let currentDownloadUrl = null;
         let currentFileName = '';
         let selectedBitrateVal = "16";
+        const TARGET_SAMPLE_RATE = 16000;
 
-        // Device disconnection continuity tracking
-        let isDeviceDisconnected = false;
-        let silenceInterval = null;
-        let lastSilenceTick = 0;
-
-        let visualizerAnimId = null;
         const CANVAS_BARS = 28;
         const CANVAS_SEGS = 8;
         let barHeights = new Float32Array(CANVAS_BARS).fill(0);
         const globalFreqData = new Uint8Array(128); 
 
+        // DOM Elements
         const elName = document.getElementById('recordName');
         const elTimer = document.getElementById('timerDisplay');
+        const elStatusBadge = document.getElementById('statusBadge');
         const elStatusDot = document.getElementById('statusDot');
         const elStatusText = document.getElementById('statusText');
         
@@ -315,6 +320,7 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
+        // Custom Dropdown Controls
         const micCustomSelect = document.getElementById('customMicSelect');
         const micTrigger = document.getElementById('micTrigger');
         const micTriggerText = document.getElementById('micTriggerText');
@@ -325,6 +331,7 @@
         const bitrateTriggerText = document.getElementById('bitrateTriggerText');
         const bitrateDropdown = document.getElementById('bitrateDropdown');
 
+        // Dropdown toggles
         micTrigger.addEventListener('click', (e) => {
             if (micCustomSelect.classList.contains('form-control-disabled')) return;
             e.stopPropagation();
@@ -344,6 +351,7 @@
             bitrateCustomSelect.classList.remove('open');
         });
 
+        // Bitrate selection
         bitrateDropdown.querySelectorAll('.select-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 bitrateDropdown.querySelectorAll('.select-option').forEach(o => o.classList.remove('selected'));
@@ -354,16 +362,18 @@
             });
         });
 
+        // Canvas DPI Handler
         function setupCanvasDPI() {
             const rect = canvas.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
             canvas.width = Math.round(rect.width * dpr);
             canvas.height = Math.round(rect.height * dpr);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            drawStaticVisualizer();
         }
         window.addEventListener('resize', setupCanvasDPI);
+        setupCanvasDPI();
 
+        // Prevent accidental closing while recording
         window.addEventListener('beforeunload', (e) => {
             if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
                 e.preventDefault();
@@ -374,153 +384,25 @@
         });
 
         window.addEventListener('DOMContentLoaded', async () => {
-            setupCanvasDPI();
-            initEncoderWorker();
             await requestPermissionAndLoadDevices();
             setupDeviceChangeListener();
-            drawStaticVisualizer();
+            drawVisualizer();
         });
 
-        function getTargetSampleRate(bitrateKbps) {
-            if (bitrateKbps <= 32) return 16000;
-            if (bitrateKbps <= 64) return 32000;
-            return 44100;
-        }
-
-        function initEncoderWorker() {
-            if (encoderWorker) return;
-
-            const workerSource = `
-                let lameLoaded = false;
-                try {
-                    importScripts('/lame.min.js');
-                    if (typeof lamejs !== 'undefined') lameLoaded = true;
-                } catch(e1) {}
-
-                if (!lameLoaded) {
-                    try {
-                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
-                        if (typeof lamejs !== 'undefined') lameLoaded = true;
-                    } catch(e2) {}
-                }
-
-                if (!lameLoaded) {
-                    self.postMessage({ cmd: 'error', error: '无法加载 MP3 编码库，请检查网络或本地文件，避免录音结束后无法下载为 MP3' });
-                }
-
-                let mp3Encoder = null;
-                let mp3Chunks = [];
-                let remainderBuffer = new Int16Array(0);
-
-                self.onmessage = function(e) {
-                    const data = e.data;
-                    if (data.cmd === 'init') {
-                        if (typeof lamejs === 'undefined') {
-                            self.postMessage({ cmd: 'error', error: '无法加载 MP3 编码库，请检查网络或本地文件' });
-                            return;
-                        }
-                        mp3Chunks = [];
-                        remainderBuffer = new Int16Array(0);
-                        mp3Encoder = new lamejs.Mp3Encoder(1, data.sampleRate, data.bitrate);
-                    } else if (data.cmd === 'encode') {
-                        if (!mp3Encoder) return;
-                        const input = new Int16Array(data.buffer);
-                        const combined = new Int16Array(remainderBuffer.length + input.length);
-                        combined.set(remainderBuffer, 0);
-                        combined.set(input, remainderBuffer.length);
-
-                        const CHUNK_SIZE = 1152 * 4;
-                        let offset = 0;
-                        while (offset + CHUNK_SIZE <= combined.length) {
-                            const chunk = combined.subarray(offset, offset + CHUNK_SIZE);
-                            const mp3buf = mp3Encoder.encodeBuffer(chunk);
-                            if (mp3buf.length > 0) mp3Chunks.push(mp3buf);
-                            offset += CHUNK_SIZE;
-                        }
-                        remainderBuffer = combined.subarray(offset);
-                    } else if (data.cmd === 'finish') {
-                        if (mp3Encoder) {
-                            if (remainderBuffer.length > 0) {
-                                const mp3buf = mp3Encoder.encodeBuffer(remainderBuffer);
-                                if (mp3buf.length > 0) mp3Chunks.push(mp3buf);
-                                remainderBuffer = new Int16Array(0);
-                            }
-                            const flushBuf = mp3Encoder.flush();
-                            if (flushBuf.length > 0) mp3Chunks.push(flushBuf);
-                            
-                            const blob = new Blob(mp3Chunks, { type: 'audio/mp3' });
-                            self.postMessage({ cmd: 'result', blob: blob });
-                            mp3Chunks = [];
-                            mp3Encoder = null;
-                        }
-                    }
-                };
-            `;
-
-            const blob = new Blob([workerSource], { type: 'application/javascript' });
-            const workerUrl = URL.createObjectURL(blob);
-            encoderWorker = new Worker(workerUrl);
-            URL.revokeObjectURL(workerUrl);
-
-            encoderWorker.onmessage = (e) => {
-                if (e.data.cmd === 'result') {
-                    onWorkerEncodeFinished(e.data.blob);
-                } else if (e.data.cmd === 'error') {
-                    showToast("⚠ " + e.data.error);
-                }
-            };
-
-            encoderWorker.onerror = (err) => {
-                console.error("Worker 内部错误:", err);
-                showToast("⚠ 编码器子线程发生异常，请检查网络或本地文件。");
-            };
-        }
-
+        // Register AudioWorklet dynamically
         async function setupAudioWorklet(context) {
             const workletCode = `
                 class RecorderWorklet extends AudioWorkletProcessor {
-                    constructor() {
-                        super();
-                        this.BUFFER_SIZE = 2048;
-                        this.pcmBuffer = new Int16Array(this.BUFFER_SIZE);
-                        this.bufIndex = 0;
-                        this.isRecording = false;
-
-                        this.port.onmessage = (e) => {
-                            if (e.data.cmd === 'start') this.isRecording = true;
-                            if (e.data.cmd === 'pause') {
-                                this.isRecording = false;
-                                this.flushBuffer();
-                            }
-                            if (e.data.cmd === 'flush') {
-                                this.isRecording = false;
-                                this.flushBuffer();
-                            }
-                        };
-                    }
-
-                    flushBuffer() {
-                        if (this.bufIndex > 0) {
-                            const trimmed = this.pcmBuffer.slice(0, this.bufIndex);
-                            this.port.postMessage(trimmed.buffer, [trimmed.buffer]);
-                            this.bufIndex = 0;
-                        }
-                    }
-
-                    process(inputs) {
-                        if (!this.isRecording) return true;
+                    process(inputs, outputs, parameters) {
                         const input = inputs[0];
                         if (input && input.length > 0) {
                             const channelData = input[0];
+                            const pcm16 = new Int16Array(channelData.length);
                             for (let i = 0; i < channelData.length; i++) {
                                 let s = Math.max(-1, Math.min(1, channelData[i]));
-                                this.pcmBuffer[this.bufIndex++] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-                                if (this.bufIndex >= this.BUFFER_SIZE) {
-                                    const copy = new Int16Array(this.pcmBuffer);
-                                    this.port.postMessage(copy.buffer, [copy.buffer]);
-                                    this.bufIndex = 0;
-                                }
+                                pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
                             }
+                            this.port.postMessage(pcm16);
                         }
                         return true;
                     }
@@ -530,7 +412,6 @@
             const blob = new Blob([workletCode], { type: 'application/javascript' });
             const workletUrl = URL.createObjectURL(blob);
             await context.audioWorklet.addModule(workletUrl);
-            URL.revokeObjectURL(workletUrl);
         }
 
         async function requestPermissionAndLoadDevices() {
@@ -538,6 +419,7 @@
             try {
                 const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 tempStream.getTracks().forEach(track => track.stop());
+
                 await new Promise(r => setTimeout(r, 100));
                 await refreshMicList();
             } catch (err) {
@@ -563,7 +445,7 @@
                 activeDeviceId = null;
                 micTriggerText.textContent = "未检测到麦克风";
                 if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
-                    handleDeviceUnplugged();
+                    showToast("⚠ 所有麦克风已被拔出/禁用！");
                 }
                 return;
             }
@@ -598,17 +480,14 @@
                     micCustomSelect.classList.remove('open');
 
                     if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
-                        await switchMicStream(activeDeviceId, true);
+                        await switchMicStream(activeDeviceId);
                     }
                 });
                 
                 micDropdown.appendChild(optDiv);
             });
 
-            if (isDeviceDisconnected && activeDeviceStillExists && activeDeviceId) {
-                // 原设备重新插入恢复
-                await switchMicStream(activeDeviceId);
-            } else if (!activeDeviceId) {
+            if (!activeDeviceId) {
                 if (defaultDevice) {
                     activeDeviceId = defaultDevice.deviceId;
                     const firstOpt = micDropdown.querySelector(`[data-value="${defaultDevice.deviceId}"]`);
@@ -627,42 +506,12 @@
                     }
                 }
             } else if (!activeDeviceStillExists) {
-                handleDeviceUnplugged();
-            }
-        }
-
-        function handleDeviceUnplugged() {
-            isDeviceDisconnected = true;
-            showToast("⚠ 检测不到录音设备，请重新接入原设备或手动选择可用设备。");
-            if (currentState === STATE.RECORDING) {
-                startSilenceFeeder();
-            }
-        }
-
-        function startSilenceFeeder() {
-            if (silenceInterval) return;
-            lastSilenceTick = Date.now();
-            const kbps = parseInt(selectedBitrateVal, 10);
-            const targetRate = getTargetSampleRate(kbps);
-
-            silenceInterval = setInterval(() => {
-                if (!isDeviceDisconnected) return;
-                const now = Date.now();
-                const deltaMs = Math.max(1, now - lastSilenceTick);
-                lastSilenceTick = now;
-
-                const count = Math.round((targetRate * deltaMs) / 1000);
-                if (count > 0 && encoderWorker) {
-                    const silence = new Int16Array(count);
-                    encoderWorker.postMessage({ cmd: 'encode', buffer: silence.buffer }, [silence.buffer]);
+                activeDeviceId = null;
+                micTriggerText.textContent = "⚠ 原设备已断开";
+                micTrigger.title = "⚠ 原设备已断开";
+                if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+                    showToast("⚠ 当前使用中的麦克风已断开。");
                 }
-            }, 100);
-        }
-
-        function stopSilenceFeeder() {
-            if (silenceInterval) {
-                clearInterval(silenceInterval);
-                silenceInterval = null;
             }
         }
 
@@ -679,25 +528,19 @@
             const tracks = stream.getAudioTracks();
             if (tracks.length > 0) {
                 tracks[0].onended = () => {
-                    handleDeviceUnplugged();
+                    if (currentState === STATE.RECORDING || currentState === STATE.PAUSED) {
+                        pauseTimer();
+                        showToast("⚠ 麦克风设备已意外断开。");
+                        setState(STATE.PAUSED);
+                        refreshMicList();
+                    }
                 };
             }
         }
 
-        async function switchMicStream(newDeviceId, isManualSwitch = false) {
+        async function switchMicStream(newDeviceId) {
             let newStream = null;
             try {
-                const kbps = parseInt(selectedBitrateVal, 10);
-                const targetRate = getTargetSampleRate(kbps);
-
-                if (audioCtx && audioCtx.sampleRate !== targetRate) {
-                    await audioCtx.close();
-                    audioCtx = null;
-                    workletNode = null;
-                    filterNode = null;
-                    analyserNode = null;
-                }
-
                 const constraints = {
                     audio: {
                         deviceId: newDeviceId ? { exact: newDeviceId } : undefined,
@@ -710,29 +553,11 @@
 
                 if (!audioCtx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    try {
-                        audioCtx = new AudioContext({ sampleRate: targetRate });
-                    } catch (e) {
-                        audioCtx = new AudioContext();
-                    }
+                    audioCtx = new AudioContext();
                     await setupAudioWorklet(audioCtx);
                 }
-
                 if (audioCtx.state === 'suspended') {
                     await audioCtx.resume();
-                }
-
-                // 抗混叠低通滤波
-                if (audioCtx.sampleRate > targetRate) {
-                    if (!filterNode) {
-                        filterNode = audioCtx.createBiquadFilter();
-                        filterNode.type = 'lowpass';
-                        filterNode.frequency.setValueAtTime(targetRate * 0.45, audioCtx.currentTime);
-                        filterNode.Q.setValueAtTime(0.707, audioCtx.currentTime);
-                    }
-                } else if (filterNode) {
-                    filterNode.disconnect();
-                    filterNode = null;
                 }
 
                 if (!analyserNode) {
@@ -744,8 +569,8 @@
                 if (!workletNode) {
                     workletNode = new AudioWorkletNode(audioCtx, 'recorder-worklet');
                     workletNode.port.onmessage = (e) => {
-                        if (currentState === STATE.RECORDING && !isDeviceDisconnected && e.data && e.data.byteLength) {
-                            handleWorkletAudioData(e.data, targetRate);
+                        if (currentState === STATE.RECORDING) {
+                            processAndEncodePCM(e.data);
                         }
                     };
                 }
@@ -756,14 +581,8 @@
                 }
 
                 sourceNode = audioCtx.createMediaStreamSource(newStream);
-                if (filterNode) {
-                    sourceNode.connect(filterNode);
-                    filterNode.connect(analyserNode);
-                    filterNode.connect(workletNode);
-                } else {
-                    sourceNode.connect(analyserNode);
-                    sourceNode.connect(workletNode);
-                }
+                sourceNode.connect(analyserNode);
+                sourceNode.connect(workletNode);
 
                 if (currentStream) {
                     currentStream.getTracks().forEach(track => track.stop());
@@ -771,12 +590,8 @@
 
                 currentStream = newStream;
                 activeDeviceId = newDeviceId || (newStream.getAudioTracks()[0] ? newStream.getAudioTracks()[0].getSettings().deviceId : null);
-                
-                isDeviceDisconnected = false;
-                stopSilenceFeeder();
-                showToast(""); 
-
                 bindTrackEndEvent(currentStream);
+                showToast(""); 
                 return true;
 
             } catch (err) {
@@ -784,45 +599,47 @@
                 if (newStream) {
                     newStream.getTracks().forEach(track => track.stop());
                 }
-                if (isManualSwitch) {
-                    showToast("⚠ 无法连接所选麦克风，请重试。");
-                }
+                showToast("⚠ 麦克风开启/切换失败。");
                 return false;
             }
         }
 
-        function resampleLinear(input16, fromRate, toRate) {
-            if (fromRate === toRate) return input16;
-            const ratio = fromRate / toRate;
-            const outLength = Math.floor(input16.length / ratio);
-            const output = new Int16Array(outLength);
+        // Downsample and real-time encode into lamejs MP3 blocks
+        function processAndEncodePCM(newPcmData) {
+            if (!mp3Encoder) return;
+
+            const sourceRate = audioCtx ? audioCtx.sampleRate : 44100;
+            const ratio = sourceRate / TARGET_SAMPLE_RATE;
+            
+            // Downsampling to 16000Hz
+            const outLength = Math.floor(newPcmData.length / ratio);
+            const resampled = new Int16Array(outLength);
             for (let i = 0; i < outLength; i++) {
-                const srcIdx = i * ratio;
-                const idxFloor = Math.floor(srcIdx);
-                const idxCeil = Math.min(idxFloor + 1, input16.length - 1);
-                const frac = srcIdx - idxFloor;
-                output[i] = Math.round((1 - frac) * input16[idxFloor] + frac * input16[idxCeil]);
-            }
-            return output;
-        }
-
-        function handleWorkletAudioData(buffer, targetRate) {
-            if (!encoderWorker || isDeviceDisconnected) return;
-
-            let pcmData = new Int16Array(buffer);
-            if (audioCtx.sampleRate !== targetRate) {
-                pcmData = resampleLinear(pcmData, audioCtx.sampleRate, targetRate);
+                resampled[i] = newPcmData[Math.floor(i * ratio)] || 0;
             }
 
-            encoderWorker.postMessage(
-                { cmd: 'encode', buffer: pcmData.buffer },
-                [pcmData.buffer]
-            );
+            // Append with remaining buffer from previous frame
+            const combined = new Int16Array(pcmBuffer.length + resampled.length);
+            combined.set(pcmBuffer, 0);
+            combined.set(resampled, pcmBuffer.length);
+
+            // Chunk size (multiple of 1152 frames for LAME encoder)
+            const chunkSize = 1152 * 5; 
+            let offset = 0;
+            while (offset + chunkSize <= combined.length) {
+                const chunk = combined.subarray(offset, offset + chunkSize);
+                const mp3buf = mp3Encoder.encodeBuffer(chunk);
+                if (mp3buf.length > 0) {
+                    mp3Chunks.push(mp3buf);
+                }
+                offset += chunkSize;
+            }
+
+            // Save leftover unencoded PCM samples
+            pcmBuffer = combined.subarray(offset);
         }
 
         function releaseAudioResources() {
-            stopVisualizer();
-            stopSilenceFeeder();
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 currentStream = null;
@@ -830,10 +647,6 @@
             if (sourceNode) {
                 sourceNode.disconnect();
                 sourceNode = null;
-            }
-            if (filterNode) {
-                filterNode.disconnect();
-                filterNode = null;
             }
             if (workletNode) {
                 workletNode.disconnect();
@@ -848,10 +661,8 @@
                 audioCtx.close();
                 audioCtx = null;
             }
-            if (currentDownloadUrl) {
-                URL.revokeObjectURL(currentDownloadUrl);
-                currentDownloadUrl = null;
-            }
+            activeDeviceId = null;
+            mp3Encoder = null;
         }
 
         function setState(newState) {
@@ -863,12 +674,11 @@
             elBtnStop.style.display = 'none';
             elBtnDownloadManual.style.display = 'none';
 
+            // Reset status badge graphics
             elStatusDot.className = "w-2 h-2 rounded-full";
             
             switch (newState) {
                 case STATE.IDLE:
-                    stopVisualizer();
-                    drawStaticVisualizer();
                     elName.disabled = false;
                     micCustomSelect.classList.remove('form-control-disabled');
                     bitrateCustomSelect.classList.remove('form-control-disabled');
@@ -881,7 +691,6 @@
                     break;
 
                 case STATE.RECORDING:
-                    startVisualizer();
                     elName.disabled = true;
                     micCustomSelect.classList.remove('form-control-disabled'); 
                     bitrateCustomSelect.classList.add('form-control-disabled');
@@ -896,8 +705,6 @@
                     break;
 
                 case STATE.PAUSED:
-                    stopVisualizer();
-                    drawStaticVisualizer();
                     elName.disabled = true;
                     micCustomSelect.classList.remove('form-control-disabled'); 
                     bitrateCustomSelect.classList.add('form-control-disabled');
@@ -912,8 +719,6 @@
                     break;
 
                 case STATE.ENCODING:
-                    stopVisualizer();
-                    drawStaticVisualizer();
                     elName.disabled = true;
                     micCustomSelect.classList.add('form-control-disabled');
                     bitrateCustomSelect.classList.add('form-control-disabled');
@@ -923,8 +728,6 @@
                     break;
 
                 case STATE.FINISHED:
-                    stopVisualizer();
-                    drawStaticVisualizer();
                     elName.disabled = false;
                     micCustomSelect.classList.remove('form-control-disabled');
                     bitrateCustomSelect.classList.remove('form-control-disabled');
@@ -940,34 +743,30 @@
             }
         }
 
+        // Action Handlers
         elBtnStart.addEventListener('click', async () => {
-            lockedRecordName = (elName.value || '语音录音').trim() || '语音录音';
-
             showToast("");
             elPlayerContainer.style.display = 'none';
 
-            initEncoderWorker();
+            if (typeof lamejs === 'undefined') {
+                showToast("⚠ lamejs 编码库未能加载，请检查网络连接。");
+                return;
+            }
 
+            // Initialize MP3 Encoder
             const kbps = parseInt(selectedBitrateVal, 10);
-            const targetRate = getTargetSampleRate(kbps);
-
-            encoderWorker.postMessage({
-                cmd: 'init',
-                sampleRate: targetRate,
-                bitrate: kbps
-            });
+            mp3Encoder = new lamejs.Mp3Encoder(1, TARGET_SAMPLE_RATE, kbps);
+            mp3Chunks = [];
+            pcmBuffer = new Int16Array(0);
 
             totalRecordedMs = 0;
             updateTimerDisplay(0);
 
             const ok = await switchMicStream(activeDeviceId);
+
             if (!ok || !currentStream) {
                 showToast("⚠ 无法开启麦克风。");
                 return;
-            }
-
-            if (workletNode) {
-                workletNode.port.postMessage({ cmd: 'start' });
             }
 
             recordStartTime = new Date();
@@ -977,13 +776,6 @@
 
         elBtnPause.addEventListener('click', () => {
             pauseTimer();
-            stopSilenceFeeder();
-            if (currentStream) {
-                currentStream.getAudioTracks().forEach(track => track.enabled = false);
-            }
-            if (workletNode) {
-                workletNode.port.postMessage({ cmd: 'pause' });
-            }
             setState(STATE.PAUSED);
         });
 
@@ -991,25 +783,20 @@
             showToast("");
 
             let isStreamValid = false;
-            if (!isDeviceDisconnected && currentStream && currentStream.getAudioTracks().length > 0) {
+            if (currentStream && currentStream.getAudioTracks().length > 0) {
                 const track = currentStream.getAudioTracks()[0];
                 if (track && track.readyState === 'live') {
-                    track.enabled = true;
                     isStreamValid = true;
                 }
             }
 
-            if (!isStreamValid && !isDeviceDisconnected) {
+            if (!isStreamValid) {
                 const reconnected = await switchMicStream(activeDeviceId);
                 if (!reconnected) {
-                    handleDeviceUnplugged();
+                    showToast("⚠ 麦克风重连失败。");
+                    setState(STATE.PAUSED);
+                    return;
                 }
-            }
-
-            if (isDeviceDisconnected) {
-                startSilenceFeeder();
-            } else if (workletNode) {
-                workletNode.port.postMessage({ cmd: 'start' });
             }
 
             startTimer();
@@ -1018,12 +805,7 @@
 
         elBtnStop.addEventListener('click', async () => {
             pauseTimer();
-            stopSilenceFeeder();
             setState(STATE.ENCODING);
-
-            if (workletNode) {
-                workletNode.port.postMessage({ cmd: 'flush' });
-            }
 
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
@@ -1034,36 +816,10 @@
                 sourceNode = null;
             }
 
-            showToast("正在导出 MP3 文件...");
-
-            // 60ms 缓冲延迟确保尾帧完整送入 worker
-            setTimeout(() => {
-                if (encoderWorker) {
-                    encoderWorker.postMessage({ cmd: 'finish' });
-                }
-            }, 60);
+            setTimeout(async () => {
+                await finalizeAndDownloadMP3();
+            }, 100);
         });
-
-        function onWorkerEncodeFinished(blob) {
-            try {
-                if (!blob || blob.size === 0) throw new Error("无有效音频数据录入");
-
-                if (currentDownloadUrl) URL.revokeObjectURL(currentDownloadUrl);
-                currentDownloadUrl = URL.createObjectURL(blob);
-                currentFileName = generateFileName(recordStartTime || new Date(), lockedRecordName);
-
-                triggerDownload(currentDownloadUrl, currentFileName);
-                elAudioPreview.src = currentDownloadUrl;
-                elPlayerContainer.style.display = 'flex';
-
-                showToast("");
-                setState(STATE.FINISHED);
-            } catch (err) {
-                console.error("MP3 导出失败:", err);
-                showToast("⚠ " + err.message);
-                setState(STATE.IDLE);
-            }
-        }
 
         elBtnDownloadManual.addEventListener('click', () => {
             if (currentDownloadUrl && currentFileName) {
@@ -1091,6 +847,49 @@
             return `${safeName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.mp3`;
         }
 
+        async function finalizeAndDownloadMP3() {
+            try {
+                if (!mp3Encoder) throw new Error("编码组件未激活");
+
+                showToast("正在导出 MP3 文件...");
+
+                // Flush remaining PCM buffer
+                if (pcmBuffer.length > 0) {
+                    const mp3buf = mp3Encoder.encodeBuffer(pcmBuffer);
+                    if (mp3buf.length > 0) mp3Chunks.push(mp3buf);
+                    pcmBuffer = new Int16Array(0);
+                }
+
+                // Finalize MP3 frame stream
+                const endBuf = mp3Encoder.flush();
+                if (endBuf.length > 0) mp3Chunks.push(endBuf);
+
+                if (mp3Chunks.length === 0) throw new Error("无有效音频数据录入");
+
+                const blob = new Blob(mp3Chunks, { type: 'audio/mp3' });
+
+                if (currentDownloadUrl) URL.revokeObjectURL(currentDownloadUrl);
+                currentDownloadUrl = URL.createObjectURL(blob);
+                currentFileName = generateFileName(recordStartTime || new Date(), elName.value);
+
+                triggerDownload(currentDownloadUrl, currentFileName);
+                elAudioPreview.src = currentDownloadUrl;
+                elPlayerContainer.style.display = 'flex';
+
+                mp3Chunks = [];
+                mp3Encoder = null;
+
+                showToast("");
+                setState(STATE.FINISHED);
+            } catch(err) {
+                console.error("MP3 导出失败:", err);
+                mp3Chunks = [];
+                mp3Encoder = null;
+                showToast("⚠ " + err.message);
+                setState(STATE.IDLE);
+            }
+        }
+
         function triggerDownload(url, fileName) {
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
@@ -1113,11 +912,6 @@
 
         function pauseTimer() {
             clearInterval(timerInterval);
-            const now = Date.now();
-            if (lastTimerTick) {
-                totalRecordedMs += (now - lastTimerTick);
-                lastTimerTick = 0;
-            }
         }
 
         function updateTimerDisplay(ms) {
@@ -1130,39 +924,17 @@
             elTimer.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
         }
 
-        function startVisualizer() {
-            if (!visualizerAnimId) {
-                visualizerAnimId = requestAnimationFrame(renderVisualizerLoop);
-            }
-        }
+        // Visualizer drawing routine
+        function drawVisualizer() {
+            requestAnimationFrame(drawVisualizer);
 
-        function stopVisualizer() {
-            if (visualizerAnimId) {
-                cancelAnimationFrame(visualizerAnimId);
-                visualizerAnimId = null;
-            }
-        }
-
-        function renderVisualizerLoop() {
-            if (currentState !== STATE.RECORDING) {
-                visualizerAnimId = null;
-                return;
-            }
-
-            drawVisualizerFrame();
-            visualizerAnimId = requestAnimationFrame(renderVisualizerLoop);
-        }
-
-        function drawVisualizerFrame() {
             const rectWidth = canvas.getBoundingClientRect().width;
             const rectHeight = canvas.getBoundingClientRect().height;
 
             ctx.clearRect(0, 0, rectWidth, rectHeight);
 
-            if (analyserNode && currentState === STATE.RECORDING && !isDeviceDisconnected) {
+            if (analyserNode && currentState === STATE.RECORDING) {
                 analyserNode.getByteFrequencyData(globalFreqData);
-            } else {
-                globalFreqData.fill(0);
             }
 
             const totalBars = CANVAS_BARS;
@@ -1175,10 +947,16 @@
             for (let i = 0; i < totalBars; i++) {
                 let targetSegCount = 0;
 
-                if (currentState === STATE.RECORDING && !isDeviceDisconnected) {
+                if (currentState === STATE.RECORDING) {
                     const fftIdx = Math.floor(Math.pow(i / totalBars, 1.5) * 60) + 1;
                     const rawVal = globalFreqData[fftIdx] || 0;
                     targetSegCount = (rawVal / 255) * totalSegs;
+                } else if (currentState === STATE.PAUSED) {
+                    targetSegCount = barHeights[i];
+                } else if (currentState === STATE.IDLE) {
+                    targetSegCount = 1;
+                } else if (currentState === STATE.ENCODING || currentState === STATE.FINISHED) {
+                    targetSegCount = 0;
                 }
 
                 if (targetSegCount > barHeights[i]) {
@@ -1198,45 +976,15 @@
 
                     if (isActive) {
                         if (segIdxFromBottom >= 6) {
-                            ctx.fillStyle = '#ef4444';
+                            ctx.fillStyle = '#ef4444'; // Red high frequency
                         } else if (segIdxFromBottom >= 4) {
-                            ctx.fillStyle = '#f59e0b';
+                            ctx.fillStyle = '#f59e0b'; // Amber mid frequency
                         } else {
-                            ctx.fillStyle = '#3b82f6';
+                            ctx.fillStyle = '#3b82f6'; // Blue low frequency
                         }
                     } else {
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
                     }
-
-                    drawRoundedRect(ctx, x, y, barWidth, segHeight, 1.5);
-                }
-            }
-        }
-
-        function drawStaticVisualizer() {
-            const rectWidth = canvas.getBoundingClientRect().width;
-            const rectHeight = canvas.getBoundingClientRect().height;
-            if (!rectWidth || !rectHeight) return;
-
-            ctx.clearRect(0, 0, rectWidth, rectHeight);
-
-            const totalBars = CANVAS_BARS;
-            const totalSegs = CANVAS_SEGS;
-            const gapX = 4;
-            const barWidth = (rectWidth - (totalBars - 1) * gapX) / totalBars;
-            const segGapY = 1.5;
-            const segHeight = (rectHeight - (totalSegs - 1) * segGapY) / totalSegs;
-
-            for (let i = 0; i < totalBars; i++) {
-                barHeights[i] = 0;
-                for (let s = 0; s < totalSegs; s++) {
-                    const segIdxFromBottom = s;
-                    const x = i * (barWidth + gapX);
-                    const y = rectHeight - (segIdxFromBottom + 1) * segHeight - segIdxFromBottom * segGapY;
-
-                    ctx.fillStyle = (segIdxFromBottom === 0 && currentState === STATE.IDLE) 
-                        ? 'rgba(59, 130, 246, 0.25)' 
-                        : 'rgba(255, 255, 255, 0.05)';
 
                     drawRoundedRect(ctx, x, y, barWidth, segHeight, 1.5);
                 }
@@ -1251,7 +999,7 @@
             ctx.arcTo(x + w, y, x + w, y + h, r);
             ctx.arcTo(x + w, y + h, x, y + h, r);
             ctx.arcTo(x, y + h, x, y, r);
-            ctx.arcTo(x, y + x + w, y, r);
+            ctx.arcTo(x, y + w, x, y, r);
             ctx.closePath();
             ctx.fill();
         }
