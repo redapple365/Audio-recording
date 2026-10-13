@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index,follow">
+<title>隐私权政策 | 网页录音机</title>
+<style>
+body{margin:0;background:#f5f7fa;color:#182230;font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{box-sizing:border-box;width:min(900px,calc(100% - 32px));margin:32px auto;padding:32px clamp(20px,5vw,56px);background:#fff;border:1px solid #e3e8ef;border-radius:16px}
+h1,h2{line-height:1.3}h1{margin-top:0}h2{margin-top:2em;font-size:1.25rem}.meta{color:#526174}.note{padding:12px 16px;background:#f1f6ff;border-left:4px solid #3976d3}a{color:#1558b0}footer{margin-top:40px;padding-top:16px;border-top:1px solid #e3e8ef}
+@media(max-width:600px){main{margin:0 auto;border-radius:0;border-width:0 0 1px;padding-top:24px}}
+</style>
+</head>
+<body><main>
+<h1>隐私权政策</h1>
+<p class="meta">应用：网页录音机　|　生效日期：2026 年 10 月 12 日</p>
+
+<p>本政策说明网页录音机（“本应用”）如何处理你的录音、Google 账号信息和 Google Drive 数据。</p>
+
+<h2>1. 本应用处理的信息</h2>
+<ul>
+<li><strong>录音和录音记录：</strong>只有在你授予麦克风权限并开始录音后，本应用才采集音频。音频在浏览器中处理、编码和播放；录音文件、恢复用的音频分块及相关记录（例如名称、开始时间、时长、大小、格式和编码参数）保存在当前浏览器的 IndexedDB 中。</li>
+<li><strong>Google 登录信息：</strong>使用 Google Drive 功能时，Firebase Authentication 和 Google 会处理完成登录所需的信息。应用界面会使用你的 Google 邮箱显示已连接账号。本应用不会获取或保存你的 Google 密码。</li>
+<li><strong>Google Drive 授权令牌：</strong>授权后，浏览器会话中会暂存用于调用 Drive API 的访问令牌，以便上传录音和访问必要的文件夹/文件元数据。令牌保存在当前标签页的 sessionStorage 中；它可能在浏览器会话结束时被清除，也可能提前失效。你可以在应用内断开连接，或在 Google 账号设置中撤销授权。</li>
+<li><strong>Drive 文件与文件夹信息：</strong>使用云端同步时，本应用会处理所选目标文件夹的 ID 和名称、上传后文件的 ID 及分享链接，用于保存设置、显示上传状态和在历史记录中提供链接。目标文件夹设置及同步开关保存在浏览器 localStorage 中。</li>
+<li><strong>界面偏好：</strong>例如可视化模式等偏好保存在当前浏览器中。</li>
+</ul>
+
+<h2>2. 麦克风与本地录音</h2>
+<p>麦克风只用于你主动开始的录音。音频默认在浏览器本地处理；未连接 Google Drive 或云端同步关闭时，本应用不会通过自身服务器上传录音。录音及其本地历史记录会在录制后保留在浏览器中；应用启动时会自动清理开始时间超过 48 小时的本地录音记录及音频缓存。你也可以在历史记录中提前删除录音或清空本地历史。</p>
+<p>浏览器数据清理、浏览器配置文件删除、设备故障或浏览器存储空间限制也可能导致本地录音丢失。请及时下载或备份需要保留的录音。</p>
+
+<h2>3. Google Drive 同步与公开分享</h2>
+<p>Drive 同步是可选功能。你连接 Google Drive 且同步开关开启后，本应用会在你录音时将音频上传至你所选的 Drive 文件夹；新安装时同步开关默认开启。你可以在录音开始前关闭同步，或断开 Drive 连接。</p>
+<p><strong>为符合本应用当前的分享功能，上传完成后本应用会将该录音文件设置为“任何拥有链接的人都可查看”（reader），并生成分享链接。</strong>获得该链接的人可能查看或播放录音，也可能继续转发链接。请勿同步或分享包含敏感、机密或你无权公开的内容。你可以在 Google Drive 中更改文件分享权限或删除云端文件。</p>
+<p>删除本应用中的本地历史记录只会删除浏览器内的记录和缓存，不会自动删除 Google Drive 中的文件，也不会自动撤销 Drive 分享权限。请在 Google Drive 中单独管理云端副本、权限和删除操作。</p>
+
+<h2>4. Google 数据的使用和披露</h2>
+<p>本应用仅为提供你主动使用的 Google 登录、选择 Drive 文件夹、上传录音、设置文件分享权限及显示分享链接等功能，按需使用 Google 用户数据。应用申请的 Drive 权限包括 <code>drive.file</code> 和 <code>drive.metadata.readonly</code>。本应用不会出售 Google 用户数据，不会将其用于广告，也不会将其用于与录音/同步功能无关的用途。</p>
+<p>使用 Google 登录或 Drive 同步时，相关数据会由 Google 按其隐私政策和服务条款处理。启用同步后，录音会传输至你的 Google Drive，并按上一节所述对链接持有者开放。当前应用版本没有配置将录音发送给其他分析、广告或 AI 服务的代码。</p>
+
+<h2>5. 存储、保留与安全</h2>
+<p>录音和历史记录默认保存在你的浏览器设备中；Drive 同步文件保存在你的 Google Drive 中。Firebase Authentication、Google Drive API 及 Google Picker 由 Google 提供。使用这些服务时，也适用 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google 隐私权政策</a> 及 <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>。网络请求使用 HTTPS。我们不会在本应用服务器上保存录音或 Google refresh token；当前版本没有用于托管录音或长期保存 Drive refresh token 的自有后端。</p>
+<p>浏览器端存储会受到同源脚本安全、设备安全和浏览器自身机制影响。请使用可信设备和浏览器，保持浏览器及操作系统更新，并在共享设备上使用后退出账号、断开 Drive 连接或清理站点数据。</p>
+
+<h2>6. 你的选择和权利</h2>
+<ul>
+<li>你可以拒绝或撤销麦克风权限；拒绝后录音功能无法使用。</li>
+<li>你可以不连接 Google Drive、关闭同步或在应用内断开连接。</li>
+<li>你可以在应用历史记录中删除本地录音，也可以清理浏览器站点数据。</li>
+<li>你可以在 Google Drive 中查看、下载、删除云端录音并更改分享权限；也可以在 Google 账号设置中撤销本应用授权。</li>
+</ul>
+
+<h2>7. 儿童隐私</h2>
+<p>本应用不是面向儿童设计的服务。</p>
+<h2>8. 政策更新</h2>
+<p>当应用功能或数据处理方式发生变化时，我们会更新本页面及生效日期。若变更涉及 Google 用户数据的用途，我们会在实施前以适当方式告知用户，并在需要时重新征求授权。</p>
+
+
+<hr>
+<h1 lang="en">Privacy Policy</h1>
+<p class="meta" lang="en">App: Web Recorder | Effective date: October 12, 2026</p>
+<p lang="en">This policy explains how Web Recorder (“the App”) handles your recordings, Google Account information, and Google Drive data.</p>
+
+<h2 lang="en">1. Information the App processes</h2>
+<ul lang="en">
+<li><strong>Recordings and recording history:</strong> The App captures audio only after you grant microphone permission and start recording. Audio is processed, encoded, and played in your browser. Recording files, recovery audio chunks, and related history (such as name, start time, duration, size, format, and encoding settings) are stored in IndexedDB in your browser.</li>
+<li><strong>Google sign-in information:</strong> When you use Google Drive features, Firebase Authentication and Google process information needed for sign-in. The App displays your Google email as the connected account. The App does not access or store your Google password.</li>
+<li><strong>Google Drive access token:</strong> After authorization, a Drive API access token is temporarily stored in the current browser tab's sessionStorage to upload recordings and access necessary folder/file metadata. It may be cleared when the browser session ends or expire earlier. You can disconnect in the App or revoke access in your Google Account settings.</li>
+<li><strong>Drive file and folder information:</strong> When cloud sync is used, the App processes the selected folder ID and name, the uploaded file ID, and its sharing link to save settings, show upload status, and display the link in history. Folder settings and the sync toggle are stored in localStorage.</li>
+<li><strong>Interface preferences:</strong> Preferences such as the visualizer mode are stored in your browser.</li>
+</ul>
+
+<h2 lang="en">2. Microphone and local recordings</h2>
+<p lang="en">The microphone is used only for recordings you start. Audio is processed locally in your browser by default. If Drive is not connected or cloud sync is off, the App does not upload recordings through its own server. Recordings and local history remain in the browser after recording; when the App starts, it automatically removes local recording records and audio caches whose start time is more than 48 hours old. You can also delete a recording or clear local history earlier.</p>
+<p lang="en">Browser data clearing, removal of a browser profile, device failure, or browser storage limits may also cause local recordings to be lost. Download or back up recordings you want to keep.</p>
+
+<h2 lang="en">3. Google Drive sync and public sharing</h2>
+<p lang="en">Drive sync is optional. When you connect Google Drive and the sync toggle is on, the App uploads audio to your selected Drive folder while you record. Sync is on by default for a new installation. You can turn it off before recording or disconnect Drive.</p>
+<p lang="en"><strong>As required by the App's current sharing feature, after upload the App sets the recording file to “Anyone with the link can view” (reader) and creates a sharing link.</strong> Anyone with the link may view or play the recording and may forward the link. Do not sync or share sensitive, confidential, or unauthorized content. You can change sharing permissions or delete the cloud file in Google Drive.</p>
+<p lang="en">Deleting local history in the App removes only the browser record and cache. It does not delete the file in Google Drive or revoke its sharing permission. Manage and delete the cloud copy and its permissions separately in Google Drive.</p>
+
+<h2 lang="en">4. Use and disclosure of Google data</h2>
+<p lang="en">The App uses Google user data only as needed to provide Google sign-in, Drive folder selection, recording upload, file-sharing settings, and sharing-link display that you request. The App requests the Drive scopes <code>drive.file</code> and <code>drive.metadata.readonly</code>. The App does not sell Google user data, use it for advertising, or use it for purposes unrelated to recording and sync features.</p>
+<p lang="en">When you use Google sign-in or Drive sync, Google processes relevant data under Google's privacy policy and terms. When sync is enabled, recordings are transferred to your Google Drive and made accessible to link holders as described above. The current App version contains no configured code that sends recordings to other analytics, advertising, or AI services.</p>
+
+<h2 lang="en">5. Storage, retention, and security</h2>
+<p lang="en">Recordings and history are stored in your browser by default; synced files are stored in your Google Drive. Firebase Authentication, Google Drive API, and Google Picker are provided by Google. The <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a> and <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a> also apply. Network requests use HTTPS. We do not store recordings on an App server or store Google refresh tokens; the current App version has no proprietary backend for hosting recordings or long-term storage of Drive refresh tokens.</p>
+<p lang="en">Browser storage is subject to same-origin script security, device security, and browser behavior. Use a trusted device and browser, keep them up to date, and on shared devices sign out, disconnect Drive, or clear site data when finished.</p>
+
+<h2 lang="en">6. Your choices and rights</h2>
+<ul lang="en">
+<li>You may deny or revoke microphone permission; recording will not work without it.</li>
+<li>You may choose not to connect Google Drive, turn off sync, or disconnect in the App.</li>
+<li>You may delete local recordings in history or clear browser site data.</li>
+<li>You may view, download, delete, and change sharing permissions for cloud recordings in Google Drive, and revoke the App's authorization in your Google Account settings.</li>
+
+</ul>
+
+<h2 lang="en">7. Children's privacy</h2>
+<p lang="en">The App is not designed for children.</p>
+<h2 lang="en">8. Changes to this policy</h2>
+<p lang="en">We will update this page and its effective date when the App's features or data practices change. If a change affects the use of Google user data, we will provide appropriate notice before implementing it and obtain renewed consent where required.</p>
+
+<footer><a href="./">返回网页录音机 / Back to Web Recorder</a></footer>
+</main></body>
+</html>
+
